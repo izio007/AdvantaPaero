@@ -1,0 +1,23 @@
+{
+  "passed": 15,
+  "checks": [
+    "DOM adapter recognizes ADVANTA-shaped fixture",
+    "collector completes on real DOM with mocked transport",
+    "virtualized tree: 36 distinct UID collected",
+    "CSV hierarchy order stays parent-children-sibling",
+    "equal names preserve different projects",
+    "manager, executor, dates and progress preserved",
+    "per-card state used, all 36 mock hours correct",
+    "widget IDs used instead of array order",
+    "periodic checkpoints exist",
+    "CSV format contains all rows and BOM",
+    "invalid callback stops after three consecutive failures",
+    "failed hours remain null, never fabricated zeros",
+    "Stop saves partial rows and does not report success",
+    "duplicate start rejected",
+    "popup renders and displays a saved job via mocked API"
+  ],
+  "browser": "Chromium 144.0.7559.96",
+  "scope": "Real DOM and timers. location, fetch and chrome.runtime mocked. Chrome-extension API integration not executed: container policy blocks extension loading and local navigation.",
+  "real_ADVANTA": "not tested"
+}

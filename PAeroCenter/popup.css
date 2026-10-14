@@ -1,0 +1,16 @@
+:root {color-scheme:dark; font:13px/1.5 "Segoe UI",Arial,sans-serif; background:#15191f; color:#e8edf4;}
+* {box-sizing:border-box;} body {width:580px; margin:0;} header {display:flex; justify-content:space-between; align-items:center; padding:20px 22px 14px; border-bottom:1px solid #313944;}
+.eyebrow {font-size:10px; letter-spacing:1.8px; color:#99a8bb;} h1 {margin:2px 0 0; font-size:26px; line-height:1.2; letter-spacing:-.7px;} h1 span {color:#ec665f;}
+.version {font-weight:600; text-align:right;} .version span {display:block; color:#91a1b5; font-size:11px;}
+main {padding:0 22px;} .target {font-family:Consolas,monospace; font-size:11px; margin:12px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#9db1c6;}
+section {margin:0 0 13px;} .section-label {font-size:10px; color:#8194aa; letter-spacing:1.2px; margin:12px 0 8px;} .options {display:flex; gap:15px; font-size:12px; margin-bottom:10px;}
+label {display:flex; gap:5px; align-items:center;} input {accent-color:#e95e58; margin:0;} button {font:inherit; border:1px solid #3a4655; background:#242d37; color:#e6edf5; border-radius:6px; padding:9px 11px; cursor:pointer;}
+button:hover:enabled {background:#303e4d; border-color:#6d7f93;} button:disabled {opacity:.38; cursor:default;} .primary {width:100%; background:#cd514d; border-color:#cd514d; font-weight:600; font-size:14px;} .primary:hover:enabled {background:#e1645e; border-color:#e1645e;}
+.row {display:flex; gap:8px; margin-top:9px;} .row button {flex:1; font-size:12px;} .hint {color:#99a8ba; font-size:11px; margin-top:8px; line-height:1.5;}
+.status-line {display:flex; align-items:center; justify-content:space-between; gap:12px;} .status-line strong {font-size:15px;} .stop {padding:5px 12px; color:#ffa39c;}
+.metrics {display:flex; gap:8px; margin:10px 0 0;} .metrics>div {flex:1; background:#1e252e; border:1px solid #303c4a; border-radius:6px; padding:8px 11px;} .metrics b {display:block; font-size:22px; font-variant-numeric:tabular-nums; line-height:1.2;} .metrics span {font-size:10px; color:#9aabbf;}
+#message,#warnings {white-space:pre-wrap; font-size:11px; background:#3a2925; border:1px solid #7c4c3c; border-radius:5px; padding:8px 10px; margin:10px 0; overflow-wrap:anywhere;} #message.success {border-color:#3b6654; background:#213a30;} #warnings {max-height:115px; overflow:auto; color:#edc4a2;}
+select {width:100%; background:#1d252f; border:1px solid #374351; border-radius:5px; color:#bdcad8; padding:7px; font:inherit; font-size:11px;}
+pre {white-space:pre-wrap; overflow-wrap:anywhere; font-size:11px; color:#a6c6df; max-height:160px; overflow:auto; background:#11171f; padding:10px; border:1px solid #303a48;}
+.bottom-row {display:flex; justify-content:space-between; margin-top:6px;} .text-button {border:0; background:transparent; color:#8da4be; font-size:11px; padding:5px 0;}
+footer {border-top:1px solid #303944; padding:10px 22px 13px; color:#8596aa; font-size:10px;}

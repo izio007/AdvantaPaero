@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "PAeroCenter",
+  "version": "2.0.0",
+  "version_name": "2.0.0 recovery",
+  "minimum_chrome_version": "118",
+  "description": "Локальный сбор структуры ADVANTA, трудозатрат и диагностика обмена выбранной вкладки. Без внешних сервисов.",
+  "permissions": ["activeTab", "scripting", "storage", "downloads", "debugger"],
+  "background": {"service_worker": "background.js"},
+  "action": {"default_popup": "popup.html", "default_title": "PAeroCenter"},
+  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; connect-src 'self'"}
+}

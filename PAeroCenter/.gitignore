@@ -1,0 +1,18 @@
+# Local runtime artifacts only. Existing samples in the user's repository are untouched.
+node_modules/
+__pycache__/
+.pytest_cache/
+test-profile*/
+test-downloads/
+*.har
+*.log
+.env
+.env.*
+PAeroCenter/structure-*.csv
+PAeroCenter/report-*.json
+
+test-results/
+structure-*.csv
+report-*.json
+diagnostic-*.json
+exports/

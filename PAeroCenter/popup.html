@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PAeroCenter</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div><div class="eyebrow">ADVANTA · LOCAL ENGINE</div><h1>PAero<span>Center</span></h1></div>
+    <div class="version">2.0 <span>recovery</span></div>
+  </header>
+  <main>
+    <div id="target" class="target">Определение рабочей вкладки…</div>
+    <div id="message" role="alert" hidden></div>
+    <section>
+      <div class="section-label">01 / СБОР ДАННЫХ</div>
+      <div class="options">
+        <label><input type="checkbox" id="hours" checked> Запросить часы</label>
+        <label><input type="checkbox" id="record" checked> Записать обмен</label>
+        <label><input type="checkbox" id="autoCsv" checked> Сохранить CSV</label>
+      </div>
+      <button id="start" class="primary">Запустить сбор</button>
+      <div class="hint">Раскрытие дерева → сбор строк → трудозатраты → CSV.<br>Окно расширения можно закрыть. Вкладку ADVANTA — не закрывать и не обновлять.</div>
+      <div class="row"><button id="screen">Собрать видимые строки</button><button id="recordOnly">Только запись обмена</button></div>
+    </section>
+    <section>
+      <div class="section-label">02 / СОСТОЯНИЕ</div>
+      <div class="status-line"><strong id="status">Готов к запуску</strong><button id="stop" class="stop" disabled>Остановить</button></div>
+      <div class="metrics"><div><b id="rows">0</b><span>строк</span></div><div><b id="processed">0</b><span>карточек с запросом часов</span></div><div><b id="requests">0</b><span>записей обмена</span></div></div>
+      <div id="phase" class="hint">Сначала откройте нужный проект в ADVANTA.</div>
+      <div id="warnings" hidden></div>
+    </section>
+    <section>
+      <div class="section-label">03 / РЕЗУЛЬТАТЫ И ДИАГНОСТИКА</div>
+      <select id="history" aria-label="Сохранённые запуски"><option value="">Текущая вкладка / последний запуск</option></select>
+      <div class="row"><button id="csv" disabled>CSV для Excel</button><button id="json" disabled>Отчёт + обмен JSON</button><button id="probe">Проверить страницу</button></div>
+      <pre id="diagnostic" hidden></pre>
+      <div class="bottom-row"><button id="diagFile" class="text-button">Сохранить диагностику</button><button id="clear" class="text-button">Очистить локальный журнал</button></div>
+    </section>
+  </main>
+  <footer>Только выбранная вкладка и её origin. Без облачных сервисов.<br>Выгрузка содержит рабочие данные. Не публикуйте её без проверки.</footer>
+  <script src="popup.js"></script>
+</body>
+</html>
