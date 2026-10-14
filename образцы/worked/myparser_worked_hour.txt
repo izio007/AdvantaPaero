@@ -1,0 +1,151 @@
+(async () => {
+  console.log('🚀 Запуск легкого API-сборщика интегральных часов...');
+
+  // 1. Извлекаем ключи авторизации WebForms с текущей страницы дерева
+  const viewStateKey = document.getElementById('__VIEWSTATE_KEY')?.value;
+  const controllerKey = document.getElementById('__CONTROLLER_KEY')?.value;
+
+  if (!viewStateKey || !controllerKey) {
+    console.error('❌ Ошибка: На странице не найдены системные ключи __VIEWSTATE_KEY / __CONTROLLER_KEY.');
+    return;
+  }
+
+  // 2. Изолированная функция прямого Ajax-запроса часов по URL проекта
+  async function fetchProjectHours(projectUrl) {
+    const failValues = { plan: '-', fact: '-', alloc: '-' };
+    try {
+      const payload = new URLSearchParams();
+      payload.append('__EVENTTARGET', '');
+      payload.append('__EVENTARGUMENT', '');
+      payload.append('__LASTFOCUS', '');
+      payload.append('__VIEWSTATE_KEY', viewStateKey);
+      payload.append('__CONTROLLER_KEY', controllerKey);
+      payload.append('__VIEWSTATE', '');
+      payload.append('__VIEWSTATEENCRYPTED', '');
+      payload.append('__CALLBACKID', 'ctl34$cbKeyMeasureWidgets');
+      payload.append('__CALLBACKPARAM', 'c0:');
+
+      const response = await fetch(projectUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-MicrosoftAjax': 'Delta=true',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': '*/*'
+        },
+        body: payload
+      });
+
+      if (!response.ok) return failValues;
+
+      const resultText = await response.text();
+      const markerIndex = resultText.indexOf('/*DX*/');
+      if (markerIndex === -1) return failValues;
+
+      // Точечно вырезаем JSON по границам фигурных скобок
+      const dxPayload = resultText.substring(markerIndex);
+      const startIndex = dxPayload.indexOf('{');
+      const endIndex = dxPayload.lastIndexOf('}');
+      if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) return failValues;
+
+      const cleanJsonString = dxPayload.substring(startIndex, endIndex + 1);
+
+      // Ваша проверенная нормализация кавычек бэкенда Advanta
+      let outerData;
+      try {
+        outerData = JSON.parse(cleanJsonString);
+      } catch (e) {
+        outerData = JSON.parse(cleanJsonString.replace(/(?<!\\)'/g, '"'));
+      }
+
+      if (outerData && outerData.result && outerData.result.data) {
+        const innerWidgets = JSON.parse(outerData.result.data.replace(/(?<!\\)'/g, '"'));
+
+        let plan = '-', fact = '-', alloc = '-';
+        if (Array.isArray(innerWidgets)) {
+          innerWidgets.forEach(w => {
+            // На основе WidgetId из присланного HTML сопоставляем План, Факт (Табель) и Бюджет (Распределено)
+            if (w.WidgetId === "cc8a35f0-e2d9-4e91-99c8-6bc061b6c377") {
+              fact = w.Number1 !== undefined ? w.Number1 : w.Text1;   // Число из number1 ("Списано в табель")
+              plan = w.Number2 !== undefined ? w.Number2 : w.Text2;   // Число из number2 ("Плановая трудоемкость")
+            } else if (w.WidgetId === "d67821dd-8739-494e-b638-c0d6a58e5388") {
+              alloc = w.Number1 !== undefined ? w.Number1 : w.Text1;  // Число из number1 ("Распределено на задачи")
+            }
+          });
+        }
+        return { plan, fact, alloc };
+      }
+    } catch (err) {
+      return failValues;
+    }
+    return failValues;
+  }
+
+  // 3. Сканируем элементы дерева, видимые в текущем состоянии разметки
+  const globalResults = new Map();
+  const items = Array.from(document.querySelectorAll('project-tree [class*="_treeItem_"]'));
+  
+  items.forEach(item => {
+    try {
+      const contentBox = item.querySelector('[class*="_treeItemContent_"]') || item;
+      const nameElem = contentBox.querySelector('[class*="_projectLink_"]');
+      const name = nameElem ? nameElem.textContent.trim() : '';
+      const link = nameElem ? nameElem.getAttribute('href') : '';
+      
+      if (!name || !link) return;
+
+      const uidMatch = link.match(/uid=([^&]+)/);
+      const uid = uidMatch ? uidMatch[1] : link;
+
+      const codeElem = contentBox.querySelector('[class*="_projectCode_"]') || contentBox.querySelector('[class*="_projectNumber_"]');
+      const code = codeElem ? codeElem.textContent.trim() : '-';
+
+      globalResults.set(uid, {
+        code,
+        name,
+        link: link.startsWith('http') ? link : window.location.origin + link,
+        planHours: '-',
+        factHours: '-',
+        allocatedHours: '-'
+      });
+    } catch (e) {}
+  });
+
+  console.log(`📋 В памяти зафиксирована структура из ${globalResults.size} узлов. Запускаем фоновый сбор часов...`);
+
+  // 4. Последовательный обход собранной базы без iframe и без перезагрузок вкладки
+  const projectsArray = Array.from(globalResults.values());
+  const keys = Array.from(globalResults.keys());
+  let idx = 0;
+
+  for (let project of projectsArray) {
+    const uid = keys[idx];
+    idx++;
+
+    // Выполняем точечный POST-запрос, сессия активна и легитимна
+    const hours = await fetchProjectHours(project.link);
+    
+    project.planHours = hours.plan;
+    project.factHours = hours.fact;
+    project.allocatedHours = hours.alloc;
+    
+    globalResults.set(uid, project);
+
+    // Логируем прогресс и выводим соответствие кодов и добытой информации в консоль
+    console.log(`[${idx}/${projectsArray.length}] Код: ${project.code} | "${project.name}" -> План: ${hours.plan} ч., Табель: ${hours.fact} ч., Распределено: ${hours.alloc} ч.`);
+  }
+
+  // 5. Выводим итоговую сводную таблицу в консоль
+  console.log('\n📊 ИТОГОВАЯ ТАБЛИЦА ТРУДОЕМКОСТИ В ПАМЯТИ:');
+  console.table(Array.from(globalResults.values()).map(p => ({
+    "Код проекта": p.code,
+    "Название работы": p.name,
+    "План": p.planHours,
+    "Списано в табель": p.factHours,
+    "Распределено на задачи": p.allocatedHours
+  })));
+
+  // Сохраняем итоговую мапу в window, чтобы ваш третий скрипт-экспортёр мог забрать её для выгрузки в CSV
+  window.FinalProjectDataWithHours = globalResults;
+  console.log('💡 Переменная window.FinalProjectDataWithHours зафиксирована и готова к дампу!');
+})();
