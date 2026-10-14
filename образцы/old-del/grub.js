@@ -1,0 +1,68 @@
+(async () => {
+  console.log('Шаг 1: Высокоскоростной запуск конвейера...');
+  window.globalResults = new Map();
+  const parent = document.querySelector('project-tree');
+  const scroll = parent ? parent.querySelector('[class*="_projectsListWrapper_"]') || parent : window;
+  
+  window.viewStateKey = document.getElementById('__VIEWSTATE_KEY')?.value;
+  window.controllerKey = document.getElementById('__CONTROLLER_KEY')?.value;
+  if (!window.viewStateKey || !window.controllerKey) return console.error('❌ Ключи авторизации не найдены.');
+
+  const hClick = (el) => {
+    ['mousedown', 'click', 'mouseup'].forEach(t => el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window, buttons: 1 })));
+  };
+
+  function collect() {
+    Array.from(document.querySelectorAll('project-tree [class*="_treeItem_"]')).forEach(item => {
+      try {
+        const box = item.querySelector('[class*="_treeItemContent_"]') || item;
+        const nEl = box.querySelector('[class*="_projectLink_"]');
+        if (!nEl) return;
+        const name = nEl.textContent.trim(), link = nEl.getAttribute('href') || '';
+        if (!name || !link) return;
+
+        const uid = link.match(/uid=([^&]+)/) ? link.match(/uid=([^&]+)/)[1] : link;
+        const level = Math.round((parseInt(item.style.marginLeft || '0px', 10) || 0) / 26);
+        const code = box.querySelector('[class*="_projectCode_"], [class*="_projectNumber_"]')?.textContent.trim() || '-';
+        const prio = (box.querySelector('[class*="_priority_item_"]')?.getAttribute('title') || '-').replace('Приоритет: ', '').trim();
+        const stat = box.querySelector('.ui-status__list-item-text')?.textContent.trim() || '-';
+        const prog = box.querySelector('[class*="_wrapper_"]')?.textContent.includes('%') ? box.querySelector('[class*="_wrapper_"]').textContent.trim() : '0%';
+
+        const dNodes = Array.from(box.querySelectorAll('[class*="_date_"]'));
+        const uNodes = Array.from(box.querySelectorAll('[class*="_userName_"]'));
+
+        window.globalResults.set(uid, {
+          level, code, name: '  '.repeat(level) + name, link: link.startsWith('http') ? link : window.location.origin + link,
+          status: stat, priority: prio, progress: prog, 
+          manager: uNodes[0] ? uNodes[0].textContent.trim() : '-', executor: uNodes[1] ? uNodes[1].textContent.trim() : '-',
+          planStart: dNodes[0] ? dNodes[0].textContent.trim() : '-', planEnd: dNodes[1] ? dNodes[1].textContent.trim() : '-',
+          factStart: dNodes[2] ? dNodes[2].textContent.trim() : '-', factEnd: dNodes[3] ? dNodes[3].textContent.trim() : '-',
+          planHours: '-', factHours: '-', allocatedHours: '-'
+        });
+      } catch (e) {}
+    });
+  }
+
+let lastY = -1, noCh = 0, total = 0;
+  while (noCh < 10) {
+    collect();
+    const btn = Array.from(document.querySelectorAll('img._switchImage_nz6me_8')).find(b => b.offsetHeight > 0 && b.src.includes('plusGray'));
+    
+    if (btn) {
+      btn.scrollIntoView({ block: 'center' });
+      await new Promise(r => setTimeout(r, 100)); // Зазор на фиксацию фокуса перед кликом
+      hClick(btn);
+      total++;
+      await new Promise(r => setTimeout(r, 500)); // Стабильное время ожидания ответа Advanta (200 OK)
+      collect();
+    }
+
+    const curY = scroll === window ? window.scrollY : scroll.scrollTop;
+    if (curY === lastY && !btn) noCh++; else { noCh = 0; lastY = curY; }
+    if (scroll === window) window.scrollBy(0, 300); else scroll.scrollTop += 300;
+    
+    console.log(`[Пул] Раскрыто: ${total}. Зафиксировано в Map: ${window.globalResults.size}`);
+    await new Promise(r => setTimeout(r, 150)); // Оптимальная пауза для рендеринга виртуального скролла
+  }
+  console.log(` Шаг 1 завершен за рекордное время. Собрано строк: ${window.globalResults.size}. Запускайте Часть №2.`);
+})();
